@@ -1,0 +1,145 @@
+package gui;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Font;
+
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+
+public class AnalyticsFrame extends JFrame {
+	
+	private static final long serialVersionUID = 1L;
+
+	private final int HEIGHT = 400;
+	private final int WIDTH = 600;
+	private final int BORDER_HEIGHT = 30;
+	private final int BORDER_WIDTH = 30;
+	
+	private final int TITLE_FONT_SIZE = 24;
+	private final int HEADER_FONT_SIZE = 18;
+	private static final int LINK_FONT_SIZE = 14;
+	
+	private Color textColor = new Color(4, 2, 78);
+	
+	public AnalyticsFrame() {
+		super("Phone Analytics");
+		
+		setSize(WIDTH, HEIGHT);
+		
+		//set the background color of the GUI
+		Container container = getContentPane();
+		container.setBackground(new Color(90, 105, 156));
+		
+		//make the side panels for a border
+		JPanel north = new JPanel();
+		north.setBackground(new Color(90, 105, 156));
+		north.setSize(WIDTH, BORDER_HEIGHT);
+		add(north, BorderLayout.NORTH);
+		JPanel south = new JPanel();
+		south.setBackground(new Color(90, 105, 156));
+		south.setSize(WIDTH, BORDER_HEIGHT);
+		add(south, BorderLayout.SOUTH);
+		JPanel west = new JPanel();
+		west.setBackground(new Color(90, 105, 156));
+		west.setSize(BORDER_WIDTH, HEIGHT);
+		add(west, BorderLayout.WEST);
+		JPanel east = new JPanel();
+		east.setBackground(new Color(90, 105, 156));
+		east.setSize(BORDER_WIDTH, HEIGHT);
+		add(east, BorderLayout.EAST);
+		
+		//add the middle panel to the GUI
+		JPanel content = new JPanel();
+		content.setLayout(new BorderLayout());
+		content.setBackground(Color.white);
+		content.setSize(WIDTH - (BORDER_WIDTH * 2), HEIGHT - (BORDER_HEIGHT *2));
+		content.setBorder(BorderFactory.createLineBorder (Color.gray, 4));
+		add(content, BorderLayout.CENTER);
+		
+		//add the title to the panel
+		JLabel title = new JLabel("Phone Analytics", JLabel.CENTER);
+		Font titleFont = new Font(title.getFont().getName(), Font.BOLD, TITLE_FONT_SIZE);
+		title.setFont(titleFont);
+		title.setForeground(textColor);
+		content.add(title, BorderLayout.NORTH);
+		
+		//create a panel to hold the menu
+		JPanel menu = new JPanel();
+		menu.setPreferredSize(new Dimension((WIDTH / 2) - BORDER_WIDTH, HEIGHT - BORDER_HEIGHT));
+		menu.setMinimumSize(menu.getPreferredSize());
+		menu.setMaximumSize(menu.getPreferredSize());
+		menu.setLayout(new BoxLayout(menu, BoxLayout.Y_AXIS));
+		menu.setBackground(content.getBackground());
+		menu.setBorder(new EmptyBorder(0, 20, 0, 0));
+		content.add(menu, BorderLayout.WEST);
+		
+		//display the initialization menu
+		menu.add(makeHeader("Initialize System"));
+		menu.add(makeLink("Load Mission Organization"));
+		menu.add(makeLink("Load Call List"));
+		
+		//display the 'run analytics' menu
+		menu.add(makeHeader("Analytics"));
+		menu.add(makeLink("Run Phone Analytics"));
+		
+		//display the 'instructions' menu
+		menu.add(makeHeader("Instructions"));
+		menu.add(makeLink("Mission Organization File"));
+		menu.add(makeLink("Basic Instructions"));
+		
+		//create a cell phone image to be displayed on the right side of the screen
+		ImageIcon phoneIcon = new ImageIcon("phone.gif");
+		JLabel phonePicture = new JLabel("", phoneIcon, JLabel.CENTER);
+		phonePicture.setPreferredSize(new Dimension((WIDTH / 2) - BORDER_WIDTH, HEIGHT - BORDER_HEIGHT));
+		//phonePicture.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+		content.add(phonePicture, BorderLayout.EAST);
+			
+		//display the page
+		setVisible(true);
+	}
+	
+	/*
+	 * Formats the text passed in to be a header
+	 * PARAMETER: String text - the text to formatted into a header
+	 * RETURN VALUE: JLabel - a formatted JLabel
+	 * */
+	private JLabel makeHeader(String text) {
+		JLabel header = new JLabel(text);
+		Font headerFont = new Font(header.getFont().getName(), Font.BOLD, HEADER_FONT_SIZE);
+		header.setFont(headerFont);
+		header.setForeground(textColor);
+		return header;
+	}
+	
+	/*
+	 * Formats the text passed in to be a link
+	 * PARAMETER: String text - the text to be formatted as a link
+	 * RETURN VALUE: JLabel - a formatted JLabel
+	 * */
+	private JLabel makeLink(String text) {
+		JLabel link = new JLabel(text);
+		
+		//do some font formatting
+		Font linkFont = new Font(link.getFont().getName(), Font.ITALIC, LINK_FONT_SIZE);
+		link.setFont(linkFont);
+		link.setForeground(textColor);
+		
+		//indent the link
+		link.setBorder(new EmptyBorder(10, 15, 10, 0));
+		
+		//make the link look clickable when the cursor goes over it
+		link.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		
+		return link;
+	}
+
+}
