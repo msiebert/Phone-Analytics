@@ -1,14 +1,20 @@
 package analytics;
 
+import java.io.IOException;
+
 import gui.AnalyticsFrame;
 
 public class PhoneAnalytics {
 	
 	private static MissionOrganization mission;
+	private static CallList calls;
 	
-	public static void main(String[] main) {
+	public static void main(String[] main) throws IOException {
+		
+		//TODO add code to handle exceptions
 		new AnalyticsFrame();
 		mission = new MissionOrganization("MissionOrganization.xls");
+		calls = new CallList("calllist.xls");		
 		
 		//System.out.println("0972-377-672: " + mission.getAreaString("0972-377-672")); 
 		//System.out.println("0972-263-507: " + mission.getAreaString("0972-263-507")); 

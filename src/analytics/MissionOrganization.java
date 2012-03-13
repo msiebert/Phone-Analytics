@@ -1,5 +1,6 @@
 package analytics;
 
+import java.io.IOException;
 import java.util.Map;
 
 import excel.ExcelReader;
@@ -10,7 +11,7 @@ public class MissionOrganization {
 	//the key is the area's phone number, and the value is a Map of the area's data
 	private Map<String, Map<String, String>> mission;
 	
-	MissionOrganization(String filePath) {
+	MissionOrganization(String filePath) throws IOException {
 		mission = ExcelReader.getMissionOrganization(filePath);
 	}
 	

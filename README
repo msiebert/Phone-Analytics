@@ -1,1 +1,3 @@
 This software will be used in the Taiwan Taichung Mission to make sure that all use of cell phones by missionaries is in accordance with the Mission Rules.
+
+This project is dependent on Apache's Apache-POI project for reading in Excel files.

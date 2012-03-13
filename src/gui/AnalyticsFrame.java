@@ -6,16 +6,20 @@ import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
-public class AnalyticsFrame extends JFrame {
+public class AnalyticsFrame extends JFrame implements ActionListener {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -29,6 +33,16 @@ public class AnalyticsFrame extends JFrame {
 	private static final int LINK_FONT_SIZE = 14;
 	
 	private Color textColor = new Color(4, 2, 78);
+	
+	//button declarations
+	private JButton initOrg;
+	private JButton initCalls;
+	private JButton runAnalysis;
+	private JButton orgInstructions;
+	private JButton instructions;
+	
+	//file chooser
+	JFileChooser fileChooser;
 	
 	public AnalyticsFrame() {
 		super("Phone Analytics");
@@ -84,17 +98,25 @@ public class AnalyticsFrame extends JFrame {
 		
 		//display the initialization menu
 		menu.add(makeHeader("Initialize System"));
-		menu.add(makeLink("Load Mission Organization"));
-		menu.add(makeLink("Load Call List"));
+		initOrg = makeLink("Load Mission Organization");
+		menu.add(initOrg);
+		initCalls = makeLink("Load Call List");
+		menu.add(initCalls);
 		
 		//display the 'run analytics' menu
 		menu.add(makeHeader("Analytics"));
-		menu.add(makeLink("Run Phone Analytics"));
+		runAnalysis = makeLink("Run Phone Analytics");
+		menu.add(runAnalysis);
 		
 		//display the 'instructions' menu
 		menu.add(makeHeader("Instructions"));
-		menu.add(makeLink("Mission Organization File"));
-		menu.add(makeLink("Basic Instructions"));
+		orgInstructions = makeLink("Mission Organization File");
+		menu.add(orgInstructions);
+		instructions = makeLink("Basic Instructions");
+		menu.add(instructions);
+		
+		//create a FileChooser to be used to choose files for mission organization and calls
+		
 		
 		//create a cell phone image to be displayed on the right side of the screen
 		ImageIcon phoneIcon = new ImageIcon("phone.gif");
@@ -123,10 +145,10 @@ public class AnalyticsFrame extends JFrame {
 	/*
 	 * Formats the text passed in to be a link
 	 * PARAMETER: String text - the text to be formatted as a link
-	 * RETURN VALUE: JLabel - a formatted JLabel
+	 * RETURN VALUE: JButton - a formatted JButton
 	 * */
-	private JLabel makeLink(String text) {
-		JLabel link = new JLabel(text);
+	private JButton makeLink(String text) {
+		JButton link = new JButton(text);
 		
 		//do some font formatting
 		Font linkFont = new Font(link.getFont().getName(), Font.ITALIC, LINK_FONT_SIZE);
@@ -139,7 +161,33 @@ public class AnalyticsFrame extends JFrame {
 		//make the link look clickable when the cursor goes over it
 		link.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		
+		//let this frame's Action Listener listen to the link
+		link.addActionListener(this);
+				
 		return link;
+	}
+
+	public void actionPerformed(ActionEvent e) {
+		
+		Object source = e.getSource();
+		
+		//take different actions based on which button was the one that got clicked
+		if (source.equals(initOrg)) {
+			((JButton) source).setText("Mission Organization...Loaded");
+		}
+		else if (source.equals(initCalls)) {
+			((JButton) source).setText("Call List...Loaded");
+		}
+		else if (source.equals(runAnalysis)) {
+			System.out.println("runAnalysis");
+		}
+		else if (source.equals(orgInstructions)) {
+			System.out.println("orgInstructions");
+		}
+		else if (source.equals(instructions)) {
+			System.out.println("instructions");
+		}
+		
 	}
 
 }
