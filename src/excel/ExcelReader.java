@@ -22,7 +22,9 @@ import analytics.CallList;
  * */
 
 public class ExcelReader {
-		
+	
+	private static int TAIWAN_YEAR_OFFSET = 1911;
+	
 	/*This method reads the file MissionOrganization.xls and gets the mission's organization
 	 * from the file.
 	 * PARAMTER: String filePath = String containing the file path to the Excel file

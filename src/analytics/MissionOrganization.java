@@ -44,6 +44,24 @@ public class MissionOrganization {
 	}
 	
 	/*
+	 * Determines whether or not the phone number passed in is a zone leader phone number
+	 * PARAMETER: String phone - the phone number to test
+	 * RETURN VALUE: boolean - true = is zone leader, false = not zone leader
+	 * */
+	public boolean isZoneLeader(String phone) {
+		return mission.get(phone).get("type").equals("ZL");
+	}
+	
+	/*
+	 * Determines whether or not the phone number passed in is a special phone number
+	 * PARAMETER: String phone - the phone number to test
+	 * RETURN VALUE: boolean - true = is special number, false = not special number
+	 * */
+	public boolean isSpecialNumber(String phone) {
+		return mission.get(phone).get("type").equals("SP");
+	}
+	
+	/*
 	 * Returns the companionship type of the companionship associated with the phone number
 	 * passed into the method
 	 * PARAMETER: String phone - the phone number of the companionship

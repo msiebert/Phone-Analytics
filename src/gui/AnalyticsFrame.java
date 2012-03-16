@@ -19,7 +19,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import analytics.PhoneAnalytics;
+
 public class AnalyticsFrame extends JFrame implements ActionListener {
+	
+	//this will let the GUI send messages back to the controller
+	private PhoneAnalytics analytics;
 	
 	private static final long serialVersionUID = 1L;
 
@@ -44,8 +49,10 @@ public class AnalyticsFrame extends JFrame implements ActionListener {
 	//file chooser
 	JFileChooser fileChooser;
 	
-	public AnalyticsFrame() {
+	public AnalyticsFrame(PhoneAnalytics analytics) {
 		super("Phone Analytics");
+		
+		this.analytics = analytics;
 		
 		setSize(WIDTH, HEIGHT);
 		
@@ -173,13 +180,22 @@ public class AnalyticsFrame extends JFrame implements ActionListener {
 		
 		//take different actions based on which button was the one that got clicked
 		if (source.equals(initOrg)) {
-			((JButton) source).setText("Mission Organization...Loaded");
+			if (analytics.initOrganization("MissionOrganization.xls"))
+				((JButton) source).setText("Mission Organization...Loaded");
+			else
+				((JButton) source).setText("Mission Organization...Failed");
 		}
 		else if (source.equals(initCalls)) {
-			((JButton) source).setText("Call List...Loaded");
+			if (analytics.initCallList("calllist.xls", "2011"))
+				((JButton) source).setText("Call List...Loaded");
+			else
+				((JButton) source).setText("Call List...Failed");
 		}
 		else if (source.equals(runAnalysis)) {
-			System.out.println("runAnalysis");
+			if (analytics.runAnalysis())
+				System.out.println("runAnalysis");
+			else 
+				System.out.println("failed");
 		}
 		else if (source.equals(orgInstructions)) {
 			System.out.println("orgInstructions");
