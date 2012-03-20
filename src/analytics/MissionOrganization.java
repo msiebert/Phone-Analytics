@@ -70,7 +70,7 @@ public class MissionOrganization {
 	 * */
 	public String getCompanionshipType(String phone) {
 		if (!mission.containsKey(phone)) 
-			throw new IllegalArgumentException("The number passed into getCompanionshipType is not a missionary number.");
+			throw new IllegalArgumentException("The number passed into getCompanionshipType is not a missionary number: " + phone);
 		return mission.get(phone).get("type");
 	}
 	
@@ -82,7 +82,7 @@ public class MissionOrganization {
 	 * */
 	public String getAreaString(String phone) {
 		if (!mission.containsKey(phone))
-			throw new IllegalArgumentException("The number passed into getAreaString is not a missionary number.");
+			throw new IllegalArgumentException("The number passed into getAreaString is not a missionary number: " + phone);
 		
 		Map<String, String> area = mission.get(phone);
 		return area.get("area") + ": " + area.get("missionaries");

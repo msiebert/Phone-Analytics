@@ -22,9 +22,7 @@ import analytics.CallList;
  * */
 
 public class ExcelReader {
-	
-	private static int TAIWAN_YEAR_OFFSET = 1911;
-	
+		
 	/*This method reads the file MissionOrganization.xls and gets the mission's organization
 	 * from the file.
 	 * PARAMTER: String filePath = String containing the file path to the Excel file
@@ -54,7 +52,7 @@ public class ExcelReader {
 			area.put("zone", cells.next().getStringCellValue());
 			area.put("area", cells.next().getStringCellValue());
 			area.put("missionaries", cells.next().getStringCellValue());
-			area.put("phone", cells.next().getStringCellValue());
+			area.put("phone", cells.next().getStringCellValue().replaceAll("-", ""));
 			area.put("type", cells.next().getStringCellValue());
 
 			mission.put(area.get("phone"), area);

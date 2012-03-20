@@ -8,6 +8,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.ParseException;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -192,10 +193,15 @@ public class AnalyticsFrame extends JFrame implements ActionListener {
 				((JButton) source).setText("Call List...Failed");
 		}
 		else if (source.equals(runAnalysis)) {
-			if (analytics.runAnalysis())
-				System.out.println("runAnalysis");
-			else 
-				System.out.println("failed");
+			try {
+				if (analytics.runAnalysis())
+					System.out.println("runAnalysis");
+				else 
+					System.out.println("failed");
+			} catch (ParseException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		}
 		else if (source.equals(orgInstructions)) {
 			System.out.println("orgInstructions");
