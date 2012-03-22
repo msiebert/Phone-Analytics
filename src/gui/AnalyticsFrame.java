@@ -47,6 +47,12 @@ public class AnalyticsFrame extends JFrame implements ActionListener {
 	private JButton orgInstructions;
 	private JButton instructions;
 	
+	//the error label
+	private JLabel error;
+	
+	//loading label
+	private JLabel loading;
+	
 	//file chooser
 	JFileChooser fileChooser;
 	
@@ -130,11 +136,29 @@ public class AnalyticsFrame extends JFrame implements ActionListener {
 		ImageIcon phoneIcon = new ImageIcon("phone.gif");
 		JLabel phonePicture = new JLabel("", phoneIcon, JLabel.CENTER);
 		phonePicture.setPreferredSize(new Dimension((WIDTH / 2) - BORDER_WIDTH, HEIGHT - BORDER_HEIGHT));
-		//phonePicture.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		content.add(phonePicture, BorderLayout.EAST);
-			
+		
+		//create a JLabel that can contain error messages
+		error = new JLabel("", JLabel.CENTER);
+		error.setForeground(Color.red);
+		content.add(error, BorderLayout.SOUTH);
+		
+		//create a cell phone image to be displayed on the right side of the screen
+		ImageIcon loadingIcon = new ImageIcon("loading.gif");
+		loading = new JLabel("", loadingIcon, JLabel.CENTER);
+		//loading.setVisible(false);
+		content.add(loading, BorderLayout.CENTER); 
+
 		//display the page
 		setVisible(true);
+	}
+	
+	/*
+	 * Sets the text of the error message
+	 * PARAMETER: String text - the text to put into the error message
+	 * */
+	public void setError(String text) {
+		error.setText("<html><p>" + text + "</p></html>");
 	}
 	
 	/*
@@ -177,27 +201,32 @@ public class AnalyticsFrame extends JFrame implements ActionListener {
 
 	public void actionPerformed(ActionEvent e) {
 		
+		loading.setText("Loading");
+		setError("");
 		Object source = e.getSource();
-		
+
 		//take different actions based on which button was the one that got clicked
 		if (source.equals(initOrg)) {
 			if (analytics.initOrganization("MissionOrganization.xls"))
 				((JButton) source).setText("Mission Organization...Loaded");
 			else
 				((JButton) source).setText("Mission Organization...Failed");
+			loading.setVisible(false);
 		}
 		else if (source.equals(initCalls)) {
 			if (analytics.initCallList("calllist.xls", "2011"))
 				((JButton) source).setText("Call List...Loaded");
 			else
 				((JButton) source).setText("Call List...Failed");
+			loading.setVisible(false);
 		}
 		else if (source.equals(runAnalysis)) {
 			try {
+				((JButton) source).setText("Run Analysis...Running");
 				if (analytics.runAnalysis())
-					System.out.println("runAnalysis");
+					((JButton) source).setText("Run Analysis...Complete");
 				else 
-					System.out.println("failed");
+					((JButton) source).setText("Run Analysis...Failed");
 			} catch (ParseException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();

@@ -14,11 +14,12 @@ public class PhoneAnalytics {
 	
 	private MissionOrganization mission;
 	private CallList calls;
+	private AnalyticsFrame gui;
 	
 	public PhoneAnalytics() throws IOException {
 		mission = null;
 		calls = null;
-		new AnalyticsFrame(this);
+		gui = new AnalyticsFrame(this);
 	}
 	
 	/*
@@ -31,6 +32,8 @@ public class PhoneAnalytics {
 			mission = new MissionOrganization(fileName);
 		}
 		catch (IOException e) {
+			gui.setError("Error: Something went wrong loading the mission organization file. Make sure " +
+					"you have the right file or check the log file to see the cause of the problem.");
 			e.printStackTrace();
 			return false;
 		}
@@ -48,6 +51,13 @@ public class PhoneAnalytics {
 			calls = new CallList(fileName, year);
 		}
 		catch(IOException e) {
+			gui.setError("Error: Something went wrong loading the call list file. Make sure " +
+					"you have the right file or check the log file to see the cause of the problem.");
+			e.printStackTrace();
+			return false;
+		}
+		catch (OutOfMemoryError e) {
+			gui.setError("Error: Ran out of memory trying to load the call list.");
 			e.printStackTrace();
 			return false;
 		}
@@ -66,10 +76,10 @@ public class PhoneAnalytics {
 		//System.out.println(checkFiveMinuteCalls());
 		//System.out.println(checkNineMinuteCalls());
 		
-		/*List<Map<String, String>> map = this.checkOutOfZone();
+		List<Map<String, String>> map = this.checkOutOfZone();
 		for (int i = 0; i < map.size(); i++) {
 			System.out.println(map.get(i));
-		}*/
+		}
 		return true;
 	}
 	
@@ -77,9 +87,9 @@ public class PhoneAnalytics {
 	 * Checks for calls between 10:30pm and 6:30 am
 	 * RETURN VALUE: List of Maps containing information about violators
 	 * */
-	private List<Map<String, String>> checkNightCalls() {
+	private Map<String, Map<String, String>> checkNightCalls() {
 		//create a List to contain the violators
-		List<Map<String, String>> violators = new ArrayList<Map<String, String>>();
+		Map<String, Map<String, String>> violators = new HashMap<String, Map<String, String>>();
 				
 		//loop through the calls in the call list
 		Iterator<String[]> callList = calls.iterator();
@@ -90,18 +100,20 @@ public class PhoneAnalytics {
 			String start = call[CallList.START].substring(6, 11);
 			String end = call[CallList.END].substring(6, 11);
 			
-			//check that the start time wasn't too early or the end time wasn't too late
-			if (start.compareTo("06:30") < 0 || end.compareTo("22:30") > 0) {
-				Map<String, String> violator = new HashMap<String, String>();
-				
-				//add the data to the violator
-				violator.put("missionaries", mission.getAreaString(call[CallList.CALLER]));
-				violator.put("phone", call[CallList.CALLER]);
-				violator.put("start", call[CallList.START]);
-				violator.put("end", call[CallList.END]);
-				
-				//add the violator to the list of violators
-				violators.add(violator);
+			//check that the start time wasn't too early or the end time wasn't too late and that the caller wasn't a special number
+			if ((start.compareTo("06:30") < 0 || end.compareTo("22:30") > 0) && !mission.isSpecialNumber(call[CallList.CALLER])) {
+				//only add a new Map if there isn't already one for the companionship
+				if (!violators.containsKey(call[CallList.CALLER])) {
+					Map<String, String> violator = new HashMap<String, String>();
+					violator.put("missionaries", mission.getAreaString(call[CallList.CALLER]));
+					violator.put("count", "1");
+					violators.put(call[CallList.CALLER], violator);
+				}
+				else {
+					Map<String, String> violator = violators.get(call[CallList.CALLER]);
+					int count = Integer.parseInt(violator.get("count")) + 1;
+					violator.put("count", count + "");
+				}
 			}
 		}
 		
@@ -120,12 +132,12 @@ public class PhoneAnalytics {
 		Iterator<String[]> callList = calls.getOverFiveMinutes();
 		while (callList.hasNext()) {
 			String[] call = callList.next();
-			if (!mission.isMissionaryNumber(call[CallList.RECEIVER])) {
+			//if it's a missionary number, they have up to 9 minutes and if the caller or receiver is a special number, no limit
+			if (!mission.isMissionaryNumber(call[CallList.RECEIVER]) && !(mission.isSpecialNumber(call[CallList.CALLER]) || mission.isSpecialNumber(call[CallList.RECEIVER]))) {
 				//only add a new Map if there isn't already one for the companionship
 				if (!violators.containsKey(call[CallList.CALLER])) {
 					Map<String, String> violator = new HashMap<String, String>();
 					violator.put("missionaries", mission.getAreaString(call[CallList.CALLER]));
-					violator.put("phone", call[CallList.CALLER]);
 					violator.put("count", "1");
 					violators.put(call[CallList.CALLER], violator);
 				}
@@ -151,12 +163,12 @@ public class PhoneAnalytics {
 		Iterator<String[]> callList = calls.getOverNineMinutes();
 		while (callList.hasNext()) {
 			String[] call = callList.next();
-			if (mission.isMissionaryNumber(call[CallList.RECEIVER])) {
+			//make sure the caller or receiver is not a special number or a non missionary (which is caught in over 5 minutes)
+			if (mission.isMissionaryNumber(call[CallList.RECEIVER]) && !(mission.isSpecialNumber(call[CallList.CALLER]) || mission.isSpecialNumber(call[CallList.RECEIVER]))) {
 				//only add a new Map if there isn't already one for the companionship
 				if (!violators.containsKey(call[CallList.CALLER])) {
 					Map<String, String> violator = new HashMap<String, String>();
 					violator.put("missionaries", mission.getAreaString(call[CallList.CALLER]));
-					violator.put("phone", call[CallList.CALLER]);
 					violator.put("count", "1");
 					violators.put(call[CallList.CALLER], violator);
 				}
@@ -183,16 +195,14 @@ public class PhoneAnalytics {
 		while (callList.hasNext()) {
 			String[] call = callList.next();
 			
-			//only do the check if the receiver wasn't a missionary or the caller or receiver wasn't special number
-			if (mission.isMissionaryNumber(call[CallList.RECEIVER]) && !mission.isSpecialNumber(call[CallList.CALLER]) && !mission.isSpecialNumber(call[CallList.RECEIVER])) {
+			//only do the check if the receiver is a missionary or the caller or receiver wasn't special number
+			if (mission.isMissionaryNumber(call[CallList.RECEIVER]) && !(mission.isSpecialNumber(call[CallList.CALLER]) || mission.isSpecialNumber(call[CallList.RECEIVER]))) {
 				if (!mission.isSameZone(call[CallList.CALLER], call[CallList.RECEIVER])) {
 					Map<String, String> violator = new HashMap<String, String>();
 					
 					//add the data to the violator
 					violator.put("caller", mission.getAreaString(call[CallList.CALLER]));
 					violator.put("receiver", mission.getAreaString(call[CallList.RECEIVER]));
-					violator.put("start", call[CallList.START]);
-					violator.put("end", call[CallList.END]);
 					
 					violators.add(violator);
 				}

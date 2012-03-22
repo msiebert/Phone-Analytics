@@ -49,6 +49,9 @@ public class MissionOrganization {
 	 * RETURN VALUE: boolean - true = is zone leader, false = not zone leader
 	 * */
 	public boolean isZoneLeader(String phone) {
+		if (!isMissionaryNumber(phone))
+			return false;
+		
 		return mission.get(phone).get("type").equals("ZL");
 	}
 	
@@ -58,6 +61,9 @@ public class MissionOrganization {
 	 * RETURN VALUE: boolean - true = is special number, false = not special number
 	 * */
 	public boolean isSpecialNumber(String phone) {
+		if (!isMissionaryNumber(phone))
+			return false;
+		
 		return mission.get(phone).get("type").equals("SP");
 	}
 	
