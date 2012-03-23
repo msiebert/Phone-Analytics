@@ -7,8 +7,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import excel.ExcelReader;
 
@@ -139,6 +141,56 @@ public class CallList {
 		long diff = Math.abs(milis2 - milis1);
 		
 		return (diff / 1000);
+	}
+	
+	/*
+	 * Gets the total minutes of each phone number
+	 * RETURN VALUE: Map of Maps containing phone number and total number of used minutes
+	 * */
+	public Map<String, Map<String, String>> getTotalMinutes() throws ParseException {
+		Map<String, Map<String, String>> phones = new HashMap<String, Map<String, String>>();
+		
+		//iterate through the calls in the call list, adding up the time
+		Iterator<String[]> callList = this.iterator();
+		while (callList.hasNext()) {
+			String[] call = callList.next();
+			
+			//if the phone number is already in the Map, just add on the seconds
+			if (phones.containsKey(call[CallList.CALLER])) {
+				Map<String, String> phone = phones.get(call[CallList.CALLER]);
+				double totalSeconds = Double.parseDouble(phone.get("time"));
+				
+				//parse the dates and get the difference in seconds
+				SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd kk:mm:ss");
+				totalSeconds += getDifferenceInSeconds(format.parse(year + "/" + call[CallList.START]), format.parse(year + "/" + call[CallList.END]));
+				
+				//put the time back into the Map
+				phone.put("time", totalSeconds + "");
+			}
+			//if the phone number isn't already in the Map, create a Map to represent the phone number
+			else {
+				Map<String, String> phone = new HashMap<String, String>();
+				phone.put("phone", call[CallList.CALLER]);
+				
+				//parse the dates and get the difference in seconds
+				SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd kk:mm:ss");
+				double totalSeconds = getDifferenceInSeconds(format.parse(year + "/" + call[CallList.START]), format.parse(year + "/" + call[CallList.END]));
+				
+				phone.put("time", "" + totalSeconds);
+				phones.put(call[CallList.CALLER], phone);
+			}
+		}
+		
+		//Iterate over all the phones and change the time value into minutes
+		Iterator<String> phoneKeys = phones.keySet().iterator();
+		while (phoneKeys.hasNext()) {
+			Map<String, String> phone = phones.get(phoneKeys.next());
+			double time = Double.parseDouble(phone.get("time"));
+			time = time / 60; //convert to minutes
+			phone.put("time", "" + Math.round(time));
+		}
+		
+		return phones;
 	}
 	
 	/*This nested class will provide an iterator for the CallList*/
