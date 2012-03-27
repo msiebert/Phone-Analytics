@@ -23,6 +23,10 @@ public class CallList {
 	//the year is supplied by the user to avoid running out of heap space
 	String year;
 	
+	//these two dates will represent the start and end of the week before transfer
+	private String lastWeekStart;
+	private String lastWeekEnd;
+	
 	//these numbers represent the indices that the particular data is stored in
 	public static int NUM_DATA_POINTS = 4;
 	public static int CALLER = 0;
@@ -32,9 +36,26 @@ public class CallList {
 	private static int fiveMinutes = 300;
 	private static int nineMinutes = 530;
 	
-	public CallList(String filePath, String year) throws IOException {
+	/*
+	 * Constructor
+	 * PARAMETER: String filePath - the location of the call list Excel file to initialize from
+	 * PARAMETER: String transfer - the date of the last transfer (yyyy/MM/dd)
+	 * */
+	public CallList(String filePath, String transfer) throws IOException {
 		calls = ExcelReader.getCallList(filePath);
-		this.year = year;
+		year = transfer.substring(0, 4);
+	
+		//set up the start and end of the last week of the transfer
+		int year = Integer.parseInt(transfer.substring(0,4));
+		int month = Integer.parseInt(transfer.substring(5,7));
+		int day = Integer.parseInt(transfer.substring(8,10));
+		
+		Calendar calendar = new GregorianCalendar(year, month - 1, day);//create a Calendar from move day
+		SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd");
+		calendar.add(Calendar.DAY_OF_YEAR, -1);//go back one day to Sunday
+		lastWeekEnd = format.format(calendar.getTime());
+		calendar.add(Calendar.DAY_OF_YEAR, -6);//go back six days to Monday
+		lastWeekStart = format.format(calendar.getTime());
 	}
 	
 	/*
@@ -114,18 +135,19 @@ public class CallList {
 	}
 	
 	/*
-	 * Determines whether or not a date is a Friday (yyyy/MM/dd). This is for determining if calls were made 
+	 * Determines whether or not a date is a certain day of the week (yyyy/MM/dd). This is for determining if calls were made 
 	 * 	the wrong times
 	 * PARAMETER: String date - the date to test
-	 * RETURN VALUE: boolean = true - is Friday, false - not Friday
+	 * PARAMETER: int dayOfWeek - the day to test against, should be a constant from the Calendar class
+	 * RETURN VALUE: boolean = true - is that day, false - not that day
 	 * */
-	public static boolean isFriday(String date) {
+	public static boolean isDayOfWeek(String date, int dayOfWeek) {
 		int year = Integer.parseInt(date.substring(0,4));
 		int month = Integer.parseInt(date.substring(5,7));
 		int day = Integer.parseInt(date.substring(8,10));
 		
 		Calendar calendar = new GregorianCalendar(year, month - 1, day);
-		return (calendar.get(Calendar.DAY_OF_WEEK) == 6);
+		return (calendar.get(Calendar.DAY_OF_WEEK) == dayOfWeek);
 	}
 	
 	/*
@@ -192,6 +214,36 @@ public class CallList {
 		
 		return phones;
 	}
+	
+	/*
+	 * Checks to see if a call was made during planning session
+	 * PARAMETER: String start - the start time of the call (MM/dd kk:mm:ss)
+	 * PARAMETER: String end - the end time of the call 
+	 * RETURN VALUE: boolean - true = during planning session, false = not during planning
+	 * */
+	public boolean duringPlanningSession(String start, String end) {
+		//add the year onto the dates 
+		start = year + "/" + start;
+		end = year + "/" + end;
+		
+		//check if it was on a planning day
+		boolean planningDay = false;
+		if (start.compareTo(lastWeekStart) > 0 && end.compareTo(lastWeekEnd) < 0 && isDayOfWeek(start, Calendar.THURSDAY))
+			planningDay = true;
+		else if (isDayOfWeek(start, Calendar.FRIDAY))
+			planningDay = true;
+	
+		//truncate the start and end time to be just hour and minute
+		start = start.substring(11,16);
+		end = end.substring(11, 16);
+		
+		//now check the start and end times
+		if (planningDay && end.compareTo("13:30") < 0)
+			return true;
+		else
+			return false;
+	}
+	
 	
 	/*This nested class will provide an iterator for the CallList*/
 	private class CallIterator<T> implements Iterator<T> {

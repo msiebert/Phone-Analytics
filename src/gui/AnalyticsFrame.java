@@ -214,7 +214,7 @@ public class AnalyticsFrame extends JFrame implements ActionListener {
 			loading.setVisible(false);
 		}
 		else if (source.equals(initCalls)) {
-			if (analytics.initCallList("calllist.xls", "2011"))
+			if (analytics.initCallList("calllist.xls", "2011/01/01"))
 				((JButton) source).setText("Call List...Loaded");
 			else
 				((JButton) source).setText("Call List...Failed");

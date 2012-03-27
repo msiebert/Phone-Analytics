@@ -30,7 +30,7 @@ public class PhoneAnalytics {
 	
 	/*
 	 * This method initializes the mission organization from the file passed in
-	 * PARAMETER: String fileName= the file to use
+	 * PARAMETER: String fileName = the file to use
 	 * RETURN VALUE: boolean - true = operation succeeded, false = operation failed
 	 * */
 	public boolean initOrganization(String fileName) {
@@ -88,7 +88,8 @@ public class PhoneAnalytics {
 		}*/
 		
 		//System.out.println(checkHomePhones());
-		System.out.println(checkTotalMinutes());
+		//System.out.println(checkTotalMinutes());
+		System.out.println(checkProselytingHours());
 		return true;
 	}
 	
@@ -130,11 +131,56 @@ public class PhoneAnalytics {
 	}
 	
 	/*
+	 * Checks for calls to missionaries other than the zone leaders between 10:30am and 9:00pm
+	 * Leaves out weekly planning session
+	 * */
+	private Map<String, Map<String, String>> checkProselytingHours() {
+		Map<String, Map<String, String>> violators = new HashMap<String, Map<String, String>>();
+		
+		//iterate over all the calls, looking for violations
+		Iterator<String[]> callList = calls.iterator();
+		while (callList.hasNext()) {
+			String[] call = callList.next();
+			
+			//get the start and end times for the call
+			String start = call[CallList.START].substring(6, 11);
+			String end = call[CallList.END].substring(6, 11);
+			
+			//go through all the conditions of being a violator
+			if (mission.isMissionaryNumber(call[CallList.RECEIVER]) && //called a missionary 
+					!mission.isSpecialNumber(call[CallList.CALLER]) && //not a special number
+					!mission.isSpecialNumber(call[CallList.RECEIVER]) && //didn't call special number
+					//not calling the zone leader or the zone leader calling them
+					!(mission.isSameZone(call[CallList.CALLER], call[CallList.RECEIVER]) 
+							&& (mission.isZoneLeader(call[CallList.CALLER]) || mission.isZoneLeader(call[CallList.RECEIVER]))) &&
+					(start.compareTo("10:30") > 0 || end.compareTo("21:00") < 0) &&//calling during proselyting hours
+					!calls.duringPlanningSession(call[CallList.START], call[CallList.END])) { //exclude planning session
+				
+				//only add a new Map if there isn't already one for the companionship
+				if (!violators.containsKey(call[CallList.CALLER])) {
+					Map<String, String> violator = new HashMap<String, String>();
+					violator.put("missionaries", mission.getAreaString(call[CallList.CALLER]));
+					violator.put("count", "1");
+					violators.put(call[CallList.CALLER], violator);
+				}
+				else {
+					Map<String, String> violator = violators.get(call[CallList.CALLER]);
+					int count = Integer.parseInt(violator.get("count")) + 1;
+					violator.put("count", count + "");
+				}
+			}
+				
+		}
+		return violators;
+	}
+	
+	
+	/*
 	 * Checks for calls to investigators that are longer than 5 minutes
 	 * RETURN VALUE: Map of Maps containing information about violators
 	 * */
 	private Map<String, Map<String, String>> checkFiveMinuteCalls() throws ParseException {
-		//create a List to contain the violators
+		//create a Map to contain the violators
 		Map<String, Map<String, String>> violators = new HashMap<String, Map<String, String>>();
 		
 		//get the list of calls over 5 minutes
