@@ -180,14 +180,14 @@ public class CallList {
 			//if the phone number is already in the Map, just add on the seconds
 			if (phones.containsKey(call[CallList.CALLER])) {
 				Map<String, String> phone = phones.get(call[CallList.CALLER]);
-				double totalSeconds = Double.parseDouble(phone.get("time"));
+				double totalSeconds = Double.parseDouble(phone.get("count"));
 				
 				//parse the dates and get the difference in seconds
 				SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd kk:mm:ss");
 				totalSeconds += getDifferenceInSeconds(format.parse(year + "/" + call[CallList.START]), format.parse(year + "/" + call[CallList.END]));
 				
 				//put the time back into the Map
-				phone.put("time", totalSeconds + "");
+				phone.put("count", totalSeconds + "");
 			}
 			//if the phone number isn't already in the Map, create a Map to represent the phone number
 			else {
@@ -198,7 +198,7 @@ public class CallList {
 				SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd kk:mm:ss");
 				double totalSeconds = getDifferenceInSeconds(format.parse(year + "/" + call[CallList.START]), format.parse(year + "/" + call[CallList.END]));
 				
-				phone.put("time", "" + totalSeconds);
+				phone.put("count", "" + totalSeconds);
 				phones.put(call[CallList.CALLER], phone);
 			}
 		}
@@ -207,9 +207,9 @@ public class CallList {
 		Iterator<String> phoneKeys = phones.keySet().iterator();
 		while (phoneKeys.hasNext()) {
 			Map<String, String> phone = phones.get(phoneKeys.next());
-			double time = Double.parseDouble(phone.get("time"));
+			double time = Double.parseDouble(phone.get("count"));
 			time = time / 60; //convert to minutes
-			phone.put("time", "" + Math.round(time));
+			phone.put("count", "" + Math.round(time));
 		}
 		
 		return phones;

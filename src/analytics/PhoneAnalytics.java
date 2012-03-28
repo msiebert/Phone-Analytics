@@ -8,6 +8,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import excel.ExcelWriter;
+
 import gui.AnalyticsFrame;
 
 public class PhoneAnalytics {
@@ -37,9 +39,9 @@ public class PhoneAnalytics {
 		try {
 			mission = new MissionOrganization(fileName);
 		}
-		catch (IOException e) {
-			gui.setError("Error: Something went wrong loading the mission organization file. Make sure " +
-					"you have the right file or check the log file to see the cause of the problem.");
+		catch (Exception e) {
+			gui.setError("Error: Something went wrong loading the mission organization file:" + fileName +
+					". Make sure you have the right file or check the log file to see the cause of the problem.");
 			e.printStackTrace();
 			return false;
 		}
@@ -57,8 +59,8 @@ public class PhoneAnalytics {
 			calls = new CallList(fileName, year);
 		}
 		catch(IOException e) {
-			gui.setError("Error: Something went wrong loading the call list file. Make sure " +
-					"you have the right file or check the log file to see the cause of the problem.");
+			gui.setError("Error: Something went wrong loading the call list file:" + fileName +
+					". Make sure you have the right file or check the log file to see the cause of the problem.");
 			e.printStackTrace();
 			return false;
 		}
@@ -74,22 +76,76 @@ public class PhoneAnalytics {
 	 * This method does all the phone analysis and will write to an Excel file
 	 * RETURN VALUE: boolean - true = operation succeeded, false = operation failed
 	 * */
-	public boolean runAnalysis() throws ParseException {
+	public boolean runAnalysis() {
 		if (mission == null || calls == null)
 			return false;
+		ExcelWriter writer = new ExcelWriter();
 		
-		//System.out.println(checkNightCalls());
-		//System.out.println(checkFiveMinuteCalls());
-		//System.out.println(checkNineMinuteCalls());
+		//create the header array for writing headers for maps to the Excel file
+		String[] mapHeader = new String[2];
+		mapHeader[0] = "Missionaries";
+		mapHeader[1] = "# of Violations";
 		
-		/*List<Map<String, String>> map = this.checkOutOfZone();
-		for (int i = 0; i < map.size(); i++) {
-			System.out.println(map.get(i));
-		}*/
+		//create the header array for writing headers for lists to the Excel file
+		String[] listHeader = new String[3];
+		listHeader[0] = "Caller";
+		listHeader[1] = "Receiver";
+		listHeader[2] = "Date (mm/yy)";
 		
-		//System.out.println(checkHomePhones());
-		//System.out.println(checkTotalMinutes());
-		System.out.println(checkProselytingHours());
+		//check for calls during proselyting hours
+		writer.addTitle("Calls to Other Missionaries during Proselyting Hours");
+		writer.addHeader(mapHeader);
+		writer.addMap(checkProselytingHours());
+		
+		//check for night time calls
+		writer.addTitle("Calls Made From 10:30pm to 6:30am");
+		writer.addHeader(mapHeader);
+		writer.addMap(checkNightCalls());
+		
+		//check for five minute calls
+		writer.addTitle("Calls to Investigators over 5 Minutes");
+		writer.addHeader(mapHeader);
+		try {
+			writer.addMap(checkFiveMinuteCalls());
+		}
+		catch (ParseException e) {
+			gui.setError("Something went wrong checking the five minute calls:" + e.getMessage());
+			e.printStackTrace();
+		}
+		
+		//check for nine minute calls
+		writer.addTitle("Calls to Missionaries over 9 Minutes");
+		writer.addHeader(mapHeader);
+		try {
+			writer.addMap(checkNineMinuteCalls());
+		} 
+		catch (ParseException e) {
+			gui.setError("Something went wrong checking the nine minute calls:" + e.getMessage());
+			e.printStackTrace();
+		}
+		
+		//check for calls outside of the zone
+		writer.addTitle("Calls outside of the Zone");
+		writer.addHeader(listHeader);
+		writer.addList(checkOutOfZone());
+		
+		//check for calls to home phones
+		writer.addTitle("Calls to Landlines");
+		writer.addHeader(mapHeader);
+		writer.addMap(checkHomePhones());
+		
+		//check for going over total minutes
+		writer.addTitle("Going Over Monthly Minutes");
+		mapHeader[1] = "Minutes";
+		writer.addHeader(mapHeader);
+		try {
+			writer.addMap(checkTotalMinutes());
+		} 
+		catch (ParseException e) {
+			gui.setError("Something went wrong checking total minutes:" + e.getMessage());
+			e.printStackTrace();
+		}
+		writer.write("results.xls");
 		return true;
 	}
 	
@@ -258,6 +314,7 @@ public class PhoneAnalytics {
 					//add the data to the violator
 					violator.put("caller", mission.getAreaString(call[CallList.CALLER]));
 					violator.put("receiver", mission.getAreaString(call[CallList.RECEIVER]));
+					violator.put("date", call[CallList.START].substring(0, 5));
 					
 					violators.add(violator);
 				}
@@ -311,10 +368,10 @@ public class PhoneAnalytics {
 		Iterator<String> phones = totals.keySet().iterator();
 		while (phones.hasNext()) {
 			Map<String, String> phone = totals.get(phones.next());
-			if (wentOverLimit(phone.get("phone"), Integer.parseInt(phone.get("time")))) {
+			if (wentOverLimit(phone.get("phone"), Integer.parseInt(phone.get("count")))) {
 				Map<String, String> violator = new HashMap<String, String>();
 				violator.put("missionaries", mission.getAreaString(phone.get("phone")));
-				violator.put("minutes", phone.get("time"));
+				violator.put("count", phone.get("count"));
 				
 				violators.put(phone.get("phone"), violator);
 			}
@@ -347,7 +404,6 @@ public class PhoneAnalytics {
 	
 	public static void main(String[] main) throws IOException, ParseException {
 		
-		//TODO add code to handle exceptions
 		PhoneAnalytics analytics = new PhoneAnalytics();
 	}
 }

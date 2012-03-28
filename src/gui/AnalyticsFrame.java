@@ -8,6 +8,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.text.ParseException;
 
 import javax.swing.BorderFactory;
@@ -130,7 +131,7 @@ public class AnalyticsFrame extends JFrame implements ActionListener {
 		menu.add(instructions);
 		
 		//create a FileChooser to be used to choose files for mission organization and calls
-		
+		fileChooser = new JFileChooser();
 		
 		//create a cell phone image to be displayed on the right side of the screen
 		ImageIcon phoneIcon = new ImageIcon("phone.gif");
@@ -146,7 +147,7 @@ public class AnalyticsFrame extends JFrame implements ActionListener {
 		//create a cell phone image to be displayed on the right side of the screen
 		ImageIcon loadingIcon = new ImageIcon("loading.gif");
 		loading = new JLabel("", loadingIcon, JLabel.CENTER);
-		//loading.setVisible(false);
+		loading.setVisible(false);
 		content.add(loading, BorderLayout.CENTER); 
 
 		//display the page
@@ -199,45 +200,55 @@ public class AnalyticsFrame extends JFrame implements ActionListener {
 		return link;
 	}
 
-	public void actionPerformed(ActionEvent e) {
+	public void actionPerformed(final ActionEvent e) {
 		
-		loading.setText("Loading");
+		loading.setVisible(true);
 		setError("");
-		Object source = e.getSource();
+		
+		//create a new thread to handle the action so that we can still show the loading image
+		new Thread() {  
+	        public void run() { 
+	        	Object source = e.getSource();
 
-		//take different actions based on which button was the one that got clicked
-		if (source.equals(initOrg)) {
-			if (analytics.initOrganization("MissionOrganization.xls"))
-				((JButton) source).setText("Mission Organization...Loaded");
-			else
-				((JButton) source).setText("Mission Organization...Failed");
-			loading.setVisible(false);
-		}
-		else if (source.equals(initCalls)) {
-			if (analytics.initCallList("calllist.xls", "2011/01/01"))
-				((JButton) source).setText("Call List...Loaded");
-			else
-				((JButton) source).setText("Call List...Failed");
-			loading.setVisible(false);
-		}
-		else if (source.equals(runAnalysis)) {
-			try {
-				((JButton) source).setText("Run Analysis...Running");
-				if (analytics.runAnalysis())
-					((JButton) source).setText("Run Analysis...Complete");
-				else 
-					((JButton) source).setText("Run Analysis...Failed");
-			} catch (ParseException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		}
-		else if (source.equals(orgInstructions)) {
-			System.out.println("orgInstructions");
-		}
-		else if (source.equals(instructions)) {
-			System.out.println("instructions");
-		}
+	        	//take different actions based on which button was the one that got clicked
+	        	if (source.equals(initOrg)) {
+	        		int returnVal = fileChooser.showOpenDialog(AnalyticsFrame.this);
+
+	                if (returnVal == JFileChooser.APPROVE_OPTION) {
+	                	File file = fileChooser.getSelectedFile();
+	                	if (analytics.initOrganization(file.getAbsolutePath()))
+	                		((JButton) source).setText("Mission Organization...Loaded");
+	                	else
+	                		((JButton) source).setText("Mission Organization...Failed");
+	                }
+	        	}
+	        	else if (source.equals(initCalls)) {
+	        		int returnVal = fileChooser.showOpenDialog(AnalyticsFrame.this);
+
+	                if (returnVal == JFileChooser.APPROVE_OPTION) {
+	                	File file = fileChooser.getSelectedFile();
+	                	if (analytics.initCallList(file.getAbsolutePath(), "2011/01/01"))
+	                		((JButton) source).setText("Call List...Loaded");
+	                	else
+	                		((JButton) source).setText("Call List...Failed");
+	                }
+	        	}
+	        	else if (source.equals(runAnalysis)) {
+	        		if (analytics.runAnalysis())
+						((JButton) source).setText("Run Analysis...Complete");
+					else 
+						((JButton) source).setText("Run Analysis...Failed");
+	        	}
+	        	else if (source.equals(orgInstructions)) {
+	        		System.out.println("orgInstructions");
+	        	}
+	        	else if (source.equals(instructions)) {
+	        		System.out.println("instructions");
+	        	}
+
+	        	loading.setVisible(false); 
+	        }  
+	    }.start();  
 		
 	}
 
