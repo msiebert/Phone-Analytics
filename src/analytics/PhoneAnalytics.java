@@ -79,8 +79,10 @@ public class PhoneAnalytics {
 	 * RETURN VALUE: boolean - true = operation succeeded, false = operation failed
 	 * */
 	public boolean runAnalysis() {
-		if (mission == null || calls == null)
+		if (mission == null || calls == null) {
+			gui.setError("Please initialize the system first.");
 			return false;
+		}
 		ExcelWriter writer = new ExcelWriter();
 		
 		//create the header array for writing headers for maps to the Excel file
@@ -113,6 +115,7 @@ public class PhoneAnalytics {
 		catch (ParseException e) {
 			gui.setError("Something went wrong checking the five minute calls:" + e.getMessage());
 			e.printStackTrace();
+			return false;
 		}
 		
 		//check for nine minute calls
@@ -124,6 +127,7 @@ public class PhoneAnalytics {
 		catch (ParseException e) {
 			gui.setError("Something went wrong checking the nine minute calls:" + e.getMessage());
 			e.printStackTrace();
+			return false;
 		}
 		
 		//check for calls outside of the zone
@@ -146,7 +150,10 @@ public class PhoneAnalytics {
 		catch (ParseException e) {
 			gui.setError("Something went wrong checking total minutes:" + e.getMessage());
 			e.printStackTrace();
+			return false;
 		}
+		
+		//write out the results and return
 		writer.write("results.xls");
 		return true;
 	}

@@ -101,16 +101,14 @@ public class ExcelReader {
 			startTime = startTime.substring(0,2) + ":" + startTime.substring(2,4) + ":" + startTime.substring(4);
 			call[CallList.START] = date + " " + startTime;
 			
+			//if there's nothing in the next cell, it's an internet charge, skip it
+			if (!cells.hasNext())
+				continue;
+			
 			//add the ending time
 			String endTime = cells.next().getStringCellValue();
 			endTime = endTime.substring(0,2) + ":" + endTime.substring(2,4) + ":" + endTime.substring(4);
 			call[CallList.END] = date + " " + endTime;
-			
-			//if there's nothing in the next cell, it's an internet charge, skip it
-			if (cells.hasNext())
-				cells.next();
-			else
-				continue;
 			
 			//add the receiver's number
 			call[CallList.RECEIVER] = cells.next().getStringCellValue();

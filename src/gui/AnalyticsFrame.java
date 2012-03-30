@@ -8,9 +8,9 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
-import java.text.ParseException;
-
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -18,7 +18,6 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
@@ -231,6 +230,27 @@ public class AnalyticsFrame extends JFrame implements ActionListener {
 		
 		//make the link look clickable when the cursor goes over it
 		link.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		
+		//give the button an mouse listener to make it light up when the user hovers over it
+		link.addMouseListener(new MouseListener() {
+			//unimplemented methods
+			public void mouseClicked(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {}
+			public void mouseReleased(MouseEvent e) {}
+
+			//code for the onHover
+			public void mouseEntered(MouseEvent e) {
+				JButton button = (JButton) e.getSource();
+				button.setForeground(Color.blue);
+			}
+			
+			//code for leaving the hover
+			public void mouseExited(MouseEvent e) {
+				JButton button = (JButton) e.getSource();
+				button.setForeground(textColor);
+			}
+			
+		});
 		
 		//let this frame's Action Listener listen to the link
 		link.addActionListener(this);
