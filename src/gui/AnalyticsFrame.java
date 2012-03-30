@@ -18,7 +18,9 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
 import analytics.PhoneAnalytics;
@@ -38,6 +40,7 @@ public class AnalyticsFrame extends JFrame implements ActionListener {
 	private final int TITLE_FONT_SIZE = 24;
 	private final int HEADER_FONT_SIZE = 18;
 	private static final int LINK_FONT_SIZE = 14;
+	private final int SMALL_HEADER_FONT_SIZE = 10;
 	
 	private Color textColor = new Color(4, 2, 78);
 	
@@ -45,8 +48,11 @@ public class AnalyticsFrame extends JFrame implements ActionListener {
 	private JButton initOrg;
 	private JButton initCalls;
 	private JButton runAnalysis;
-	private JButton orgInstructions;
-	private JButton instructions;
+	
+	//text field declarations
+	private JTextField year;
+	private JTextField month;
+	private JTextField transferDate;
 	
 	//the error label
 	private JLabel error;
@@ -113,22 +119,30 @@ public class AnalyticsFrame extends JFrame implements ActionListener {
 		
 		//display the initialization menu
 		menu.add(makeHeader("Initialize System"));
+		JPanel initMenu = new JPanel();
+		initMenu.setBorder(new EmptyBorder(0, 20, 0, 0));
+		initMenu.setBackground(content.getBackground());
+		initMenu.setLayout(new BoxLayout(initMenu, BoxLayout.Y_AXIS));
 		initOrg = makeLink("Load Mission Organization");
-		menu.add(initOrg);
+		initMenu.add(initOrg);
+		initMenu.add(makeSmallHeader("Enter Year of Calls (yyyy format):"));
+		year = makeTextField(4);
+		initMenu.add(year);
+		initMenu.add(makeSmallHeader("Enter Month of Calls (mm format):"));
+		month = makeTextField(2);
+		initMenu.add(month);
+		initMenu.add(makeSmallHeader("Enter Date of Last Move Day (yyyy/mm/dd format):"));
+		transferDate = makeTextField(10);
+		initMenu.add(transferDate);
 		initCalls = makeLink("Load Call List");
-		menu.add(initCalls);
+		initMenu.add(initCalls);
+		menu.add(initMenu);
+		
 		
 		//display the 'run analytics' menu
 		menu.add(makeHeader("Analytics"));
 		runAnalysis = makeLink("Run Phone Analytics");
 		menu.add(runAnalysis);
-		
-		//display the 'instructions' menu
-		menu.add(makeHeader("Instructions"));
-		orgInstructions = makeLink("Mission Organization File");
-		menu.add(orgInstructions);
-		instructions = makeLink("Basic Instructions");
-		menu.add(instructions);
 		
 		//create a FileChooser to be used to choose files for mission organization and calls
 		fileChooser = new JFileChooser();
@@ -176,6 +190,30 @@ public class AnalyticsFrame extends JFrame implements ActionListener {
 	}
 	
 	/*
+	 * Formats the text passed in to be a smaller header
+	 * PARAMETER: String text - the text to be formatted into a small header
+	 * RETURN VALUE: JLabel - the formatted JLabel
+	 * */
+	private JLabel makeSmallHeader(String text) {
+		JLabel header = new JLabel("<html><p>" + text + "</p></html>");
+		Font headerFont = new Font(header.getFont().getName(), Font.ITALIC, SMALL_HEADER_FONT_SIZE);
+		header.setFont(headerFont);
+		header.setForeground(textColor);
+		//header.setBorder(new EmptyBorder(10, -5, 10, 0));
+		return header;
+	}
+	
+	/*
+	 * Formats a textfield
+	 * PARAMETER: int columnCount - the number of columns there should be
+	 * RETURN VALUE: JTextField - the formatted JTextField
+	 * */
+	private JTextField makeTextField(int columnCount) {
+		JTextField field = new JTextField(columnCount);
+		return field;
+	}
+	
+	/*
 	 * Formats the text passed in to be a link
 	 * PARAMETER: String text - the text to be formatted as a link
 	 * RETURN VALUE: JButton - a formatted JButton
@@ -184,12 +222,12 @@ public class AnalyticsFrame extends JFrame implements ActionListener {
 		JButton link = new JButton(text);
 		
 		//do some font formatting
-		Font linkFont = new Font(link.getFont().getName(), Font.ITALIC, LINK_FONT_SIZE);
+		Font linkFont = new Font(link.getFont().getName(), Font.PLAIN, LINK_FONT_SIZE);
 		link.setFont(linkFont);
 		link.setForeground(textColor);
 		
-		//indent the link
-		link.setBorder(new EmptyBorder(10, 15, 10, 0));
+		//remove the button look
+		link.setBorder(new EmptyBorder(10, 0, 10, 0));
 		
 		//make the link look clickable when the cursor goes over it
 		link.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -223,11 +261,33 @@ public class AnalyticsFrame extends JFrame implements ActionListener {
 	                }
 	        	}
 	        	else if (source.equals(initCalls)) {
+	        		String yearText = year.getText();
+	        		String monthText = month.getText();
+	        		String transferText = transferDate.getText();
+	        		
+	        		//do simple tests for length of the strings
+	        		if (yearText == null || yearText.length() != 4) {
+	        			setError("Please enter the year in 'yyyy' format.");
+	        			loading.setVisible(false);
+	        			return;
+	        		}
+	        		if (monthText == null || monthText.length() != 2) {
+	        			setError("Please enter the month in 'mm' format.");
+	        			loading.setVisible(false);
+	        			return;
+	        		}
+	        		if (transferText == null || transferText.length() != 10) {
+	        			setError("Please enter the transfer date in 'yyyy/mm/dd' format.");
+	        			loading.setVisible(false);
+	        			return;
+	        		}
+	        		
 	        		int returnVal = fileChooser.showOpenDialog(AnalyticsFrame.this);
 
-	                if (returnVal == JFileChooser.APPROVE_OPTION) {
+	               if (returnVal == JFileChooser.APPROVE_OPTION) {
 	                	File file = fileChooser.getSelectedFile();
-	                	if (analytics.initCallList(file.getAbsolutePath(), "2011/01/01"))
+	                	
+	                	if (analytics.initCallList(file.getAbsolutePath(), yearText, monthText, transferText))
 	                		((JButton) source).setText("Call List...Loaded");
 	                	else
 	                		((JButton) source).setText("Call List...Failed");
@@ -238,12 +298,6 @@ public class AnalyticsFrame extends JFrame implements ActionListener {
 						((JButton) source).setText("Run Analysis...Complete");
 					else 
 						((JButton) source).setText("Run Analysis...Failed");
-	        	}
-	        	else if (source.equals(orgInstructions)) {
-	        		System.out.println("orgInstructions");
-	        	}
-	        	else if (source.equals(instructions)) {
-	        		System.out.println("instructions");
 	        	}
 
 	        	loading.setVisible(false); 

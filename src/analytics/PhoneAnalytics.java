@@ -52,11 +52,13 @@ public class PhoneAnalytics {
 	 * This method initializes the call list from the file passed in
 	 * PARAMETER: String fileName = the file to use
 	 * PARAMETER: String year = the year that the data in the file is from
+	 * PARAMETER: String month - the month that the data in the file is from
+	 * PARAMETER: String transfer - the date of the last transfer
 	 * RETURN VALUE: boolean - true = the operation succeeded, false = operation failed
 	 * */
-	public boolean initCallList(String fileName, String year) {
+	public boolean initCallList(String fileName, String year, String month, String transfer) {
 		try {
-			calls = new CallList(fileName, year);
+			calls = new CallList(fileName, year, month, transfer);
 		}
 		catch(IOException e) {
 			gui.setError("Error: Something went wrong loading the call list file:" + fileName +
@@ -163,8 +165,8 @@ public class PhoneAnalytics {
 			String[] call = callList.next();
 			
 			//get the start and end times for the call
-			String start = call[CallList.START].substring(6, 11);
-			String end = call[CallList.END].substring(6, 11);
+			String start = call[CallList.START].substring(3, 8);
+			String end = call[CallList.END].substring(3, 8);
 			
 			//check that the start time wasn't too early or the end time wasn't too late and that the caller wasn't a special number
 			if ((start.compareTo("06:30") < 0 || end.compareTo("22:30") > 0) && !mission.isSpecialNumber(call[CallList.CALLER])) {
@@ -199,8 +201,8 @@ public class PhoneAnalytics {
 			String[] call = callList.next();
 			
 			//get the start and end times for the call
-			String start = call[CallList.START].substring(6, 11);
-			String end = call[CallList.END].substring(6, 11);
+			String start = call[CallList.START].substring(3, 8);
+			String end = call[CallList.END].substring(3, 8);
 			
 			//go through all the conditions of being a violator
 			if (mission.isMissionaryNumber(call[CallList.RECEIVER]) && //called a missionary 
@@ -314,7 +316,7 @@ public class PhoneAnalytics {
 					//add the data to the violator
 					violator.put("caller", mission.getAreaString(call[CallList.CALLER]));
 					violator.put("receiver", mission.getAreaString(call[CallList.RECEIVER]));
-					violator.put("date", call[CallList.START].substring(0, 5));
+					violator.put("date", calls.getMonth() + "/" + call[CallList.START].substring(0, 2));
 					
 					violators.add(violator);
 				}

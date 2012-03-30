@@ -92,9 +92,9 @@ public class ExcelReader {
 			
 			call[CallList.CALLER] = cells.next().getStringCellValue().trim();
 			
-			//get the date of the call (omit year to make the string smaller for memory)
+			//get the date of the call (omit year and month to make the string smaller for memory)
 			String date = cells.next().getStringCellValue();
-			date = date.substring(3, 5) + "/" + date.substring(5);
+			date = date.substring(5);
 			
 			//add the starting time
 			String startTime = cells.next().getStringCellValue();

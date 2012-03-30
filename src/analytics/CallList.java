@@ -20,8 +20,9 @@ public class CallList {
 	//each phone call is represented by a Map with the various pieces of data
 	private List<String[]> calls;
 	
-	//the year is supplied by the user to avoid running out of heap space
+	//the year and month is supplied by the user to avoid running out of heap space
 	String year;
+	String month;
 	
 	//these two dates will represent the start and end of the week before transfer
 	private String lastWeekStart;
@@ -41,16 +42,17 @@ public class CallList {
 	 * PARAMETER: String filePath - the location of the call list Excel file to initialize from
 	 * PARAMETER: String transfer - the date of the last transfer (yyyy/MM/dd)
 	 * */
-	public CallList(String filePath, String transfer) throws IOException {
+	public CallList(String filePath, String year, String month, String transfer) throws IOException {
 		calls = ExcelReader.getCallList(filePath);
-		year = transfer.substring(0, 4);
+		this.year = year;
+		this.month = month;
 	
 		//set up the start and end of the last week of the transfer
-		int year = Integer.parseInt(transfer.substring(0,4));
-		int month = Integer.parseInt(transfer.substring(5,7));
+		int transferYear = Integer.parseInt(transfer.substring(0,4));
+		int transferMonth = Integer.parseInt(transfer.substring(5,7));
 		int day = Integer.parseInt(transfer.substring(8,10));
 		
-		Calendar calendar = new GregorianCalendar(year, month - 1, day);//create a Calendar from move day
+		Calendar calendar = new GregorianCalendar(transferYear, transferMonth - 1, day);//create a Calendar from move day
 		SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd");
 		calendar.add(Calendar.DAY_OF_YEAR, -1);//go back one day to Sunday
 		lastWeekEnd = format.format(calendar.getTime());
@@ -74,8 +76,8 @@ public class CallList {
 		//loop through the calls, adding all calls over 5 minutes to the new List
 		for(int i = 0; i < calls.size(); i++) {
 			String[] current = calls.get(i);
-			String start = year + "/" + current[START];
-			String end = year + "/" + current[END];
+			String start = year + "/" + month + "/" + current[START];
+			String end = year + "/" + month + "/" + current[END];
 			if (!withinFiveMinutes(start, end))
 				overFive.add(current);
 		}
@@ -92,8 +94,8 @@ public class CallList {
 		//loop through the calls, adding all calls over 9 minutes to the new List
 		for(int i = 0; i < calls.size(); i++) {
 			String[] current = calls.get(i);
-			String start = year + "/" + current[START];
-			String end = year + "/" + current[END];
+			String start = year + "/" + month + "/" + current[START];
+			String end = year + "/" + month + "/" + current[END];
 			if (!withinNineMinutes(start, end))
 				overNine.add(current);
 		}
@@ -184,7 +186,7 @@ public class CallList {
 				
 				//parse the dates and get the difference in seconds
 				SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd kk:mm:ss");
-				totalSeconds += getDifferenceInSeconds(format.parse(year + "/" + call[CallList.START]), format.parse(year + "/" + call[CallList.END]));
+				totalSeconds += getDifferenceInSeconds(format.parse(year + "/" + month + "/" + call[CallList.START]), format.parse(year + "/" + month + "/" + call[CallList.END]));
 				
 				//put the time back into the Map
 				phone.put("count", totalSeconds + "");
@@ -196,7 +198,7 @@ public class CallList {
 				
 				//parse the dates and get the difference in seconds
 				SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd kk:mm:ss");
-				double totalSeconds = getDifferenceInSeconds(format.parse(year + "/" + call[CallList.START]), format.parse(year + "/" + call[CallList.END]));
+				double totalSeconds = getDifferenceInSeconds(format.parse(year + "/" + month + "/" + call[CallList.START]), format.parse(year + "/" + month + "/" + call[CallList.END]));
 				
 				phone.put("count", "" + totalSeconds);
 				phones.put(call[CallList.CALLER], phone);
@@ -216,6 +218,14 @@ public class CallList {
 	}
 	
 	/*
+	 * Gets the month
+	 * RETURN VALUE: String - the month entered by the user
+	 * */
+	public String getMonth() {
+		return month;
+	}
+	
+	/*
 	 * Checks to see if a call was made during planning session
 	 * PARAMETER: String start - the start time of the call (MM/dd kk:mm:ss)
 	 * PARAMETER: String end - the end time of the call 
@@ -223,8 +233,8 @@ public class CallList {
 	 * */
 	public boolean duringPlanningSession(String start, String end) {
 		//add the year onto the dates 
-		start = year + "/" + start;
-		end = year + "/" + end;
+		start = year + "/" + month + "/" + start;
+		end = year + "/" + month + "/" + end;
 		
 		//check if it was on a planning day
 		boolean planningDay = false;
