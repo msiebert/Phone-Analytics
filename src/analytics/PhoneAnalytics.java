@@ -112,6 +112,10 @@ public class PhoneAnalytics {
 		try {
 			writer.addMap(checkFiveMinuteCalls());
 		}
+		catch (IllegalArgumentException e) {
+			gui.setError(e.getMessage());
+			return false;
+		}
 		catch (ParseException e) {
 			gui.setError("Something went wrong checking the five minute calls:" + e.getMessage());
 			e.printStackTrace();
